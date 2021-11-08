@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from input import const_input
 
 '''
 LIF neuron model: (dV/dt) = - (V - (V_rest + stim * R)) / tau
@@ -16,7 +17,8 @@ ts = 0.01       # time step in ms
 
 epoch = int(simu_time // ts + 1)   # num of stim epoch
 
-stim = [20.] * epoch           # list of input, change with different input waveform
+stim = const_input(20., simu_time, [[20., 60.]], ts)
+# list of input, change with different input waveform
 
 t = 0.          # time
 V = -70         # membrane potential
