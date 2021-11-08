@@ -14,15 +14,15 @@ tau = 10.       # time const in ms
 simu_time = 100 # simulation time in ms
 ts = 0.01       # time step in ms
 
-epoch = int(simu_time // ts)   # num of stim epoch
+epoch = int(simu_time // ts + 1)   # num of stim epoch
 
 stim = [20.] * epoch           # list of input, change with different input waveform
 
 t = 0.          # time
 V = -70         # membrane potential
 # record value in list
-t_list = [t]
-V_list = [V]
+t_list = []
+V_list = []
 
 for i in range(epoch):
     dvdt = - ((V - (V_rest + stim[i] * R)) / tau)
@@ -33,6 +33,8 @@ for i in range(epoch):
     t_list.append(t)
     V_list.append(V)
 
-plt.plot(t_list, V_list)
-#plt.legend()
+fig, axs = plt.subplots(2, 1)
+axs[0].plot(t_list, stim, label = "input")
+axs[1].plot(t_list, V_list, label = 'V')
+plt.legend()
 plt.show()
