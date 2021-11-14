@@ -31,9 +31,9 @@ for i in range(epoch):
     V = V + ts * dvdt
     if V >= V_th:
         V = V_reset
-    t += ts
     t_list.append(t)
     V_list.append(V)
+    t += ts
 
 fig, axs = plt.subplots(2, 1)
 axs[0].plot(t_list, stim, label = "input")
