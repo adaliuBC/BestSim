@@ -17,7 +17,7 @@ ts = 0.01       # time step in ms
 
 epoch = int(simu_time // ts + 1)   # num of stim epoch
 
-stim = const_input(20., simu_time, [[20., 60.]], ts)
+stim = const_input(20., simu_time, ts)
 # list of input, change with different input waveform
 
 t = 0.          # time

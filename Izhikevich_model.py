@@ -17,7 +17,7 @@ ts = 0.01        # time step in ms
 
 epoch = int(simu_time // ts + 1)   # num of stim epoch
 
-stim = const_input(20., simu_time, [[0., 100.]], ts)
+stim = const_input(20., simu_time, ts)
 # list of input, change with different input waveform
 
 t = 0.
@@ -55,6 +55,6 @@ for i in range(epoch):
 fig, axs = plt.subplots(3, 1)
 axs[0].plot(t_list, stim, label = "input")
 axs[1].plot(t_list, u_list, label = 'u')
-axs[2].plot(t_list, V_list, label = 'V')
+axs[2].plot(u_list, V_list, label = 'V')
 plt.legend()
 plt.show()
