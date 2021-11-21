@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
-from input import const_input
+from input import const_input, ramp_input
 
 '''
 LIF neuron model: (dV/dt) = - (V - (V_rest + stim * R)) / tau
@@ -43,7 +43,7 @@ V_list1 = copy.deepcopy(V_list)
 # record value in list
 t_list = []
 V_list = []
-stim2 = const_input(16., simu_time, ts)
+stim2 = const_input(15.1, simu_time, ts)
 # list of input, change with different input waveform
 LIF(V_rest = V_rest, V_reset = V_reset, V_th = V_th, R = R,
     tau = tau, stim = stim2, simu_time = simu_time, ts = ts)
@@ -51,9 +51,39 @@ V_list2 = copy.deepcopy(V_list)
 
 fig, axs = plt.subplots(2, 1)
 axs[0].plot(t_list, stim1, label = "input=15")
-axs[0].plot(t_list, stim2, label = "input=16")
+axs[0].plot(t_list, stim2, label = "input=15.1")
 axs[0].set_ylim(0., 20.)
 axs[1].plot(t_list, V_list1, label = 'V1')
 axs[1].plot(t_list, V_list2, label = 'V2')
 plt.legend()
+plt.show()
+
+
+# compare with other type of inputs
+## ramp input
+
+fig, axs = plt.subplots(2, 1)
+for startVal, endVal in [(10, 20)]:
+    stim = ramp_input(startVal, endVal, simu_time, ts)
+    t_list = []
+    V_list = []
+    LIF(V_rest = V_rest, V_reset = V_reset, V_th = V_th, R = R,
+        tau = tau, stim = stim, simu_time = simu_time, ts = ts)
+    axs[0].plot(t_list, stim, label = f"({startVal}, {endVal})")
+    axs[1].plot(t_list, V_list, label = 'V1')
+    plt.legend()
+plt.show()
+    
+
+## sinuous input
+fig, axs = plt.subplots(2, 1)
+for startVal, endVal in [(10, 20)]:
+    stim = sinuous_input(amp, omega, b, simu_time, ts)
+    t_list = []
+    V_list = []
+    LIF(V_rest = V_rest, V_reset = V_reset, V_th = V_th, R = R,
+        tau = tau, stim = stim, simu_time = simu_time, ts = ts)
+    axs[0].plot(t_list, stim, label = f"({startVal}, {endVal})")
+    axs[1].plot(t_list, V_list, label = 'V1')
+    plt.legend()
 plt.show()
