@@ -258,3 +258,4 @@ for i in range(5):
     plot(mode_list[modeNum], fig, axs[1][1])
     modeNum += 1
     plt.show()
+
