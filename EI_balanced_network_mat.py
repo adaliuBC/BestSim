@@ -52,6 +52,31 @@ class exponential:  # size: 50 * 500
         #print("2:", s)
         return t, s, stim_post
 
+def sinuous_input(mean = 1., amp = 0.5, omega = 1., b = 0.,
+                  neuNum = 1, epochs = 0., step = 0.01):
+    '''
+    Param:
+    amp:         Max amplitude of sinuous stim
+    omega:       omega of sinuous stim
+    b:           b of sinuous stim
+    neuNum:      neuro number taht is used here.
+    simuTime:    total time of simulation
+    step:        simulation step
+    
+    Return:
+    input:       np.ndarray of constant stimulus amplitude per timestep
+    '''
+    inputList = []
+    for i in range(epochs):
+        t = i * step
+        inputList.append([mean + amp * np.sin(omega * t + b)] * neuNum)
+    input = np.array(inputList)
+    return input
+
+np.random.seed(42)
+simu_time = 1010.    # simulation time in ms
+# drop the last 10ms for ploting
+ts = 0.01            # time step in ms
 excit_neu_num = 500
 inhib_neu_num = 500
 conn_prob = 0.1
@@ -68,12 +93,36 @@ g_max_E = 1 / (np.sqrt(conn_prob * excit_neu_num))
 g_max_I = 1 / (np.sqrt(conn_prob * inhib_neu_num))
 tau_decay = 2.
 
-simu_time = 1000. # simulation time in ms
-ts = 0.01         # time step in ms
 
 epochs = int(simu_time // ts + 1)
-stim_ext2E_list = np.ones((epochs, excit_neu_num)) * 3
-stim_ext2I_list = np.ones((epochs, inhib_neu_num)) * 3
+'''
+stim_ext2E_list1 = np.ones((epochs//2, excit_neu_num)) * 3  #2.43
+stim_ext2I_list1 = np.ones((epochs//2, inhib_neu_num)) * 3  #2.43
+stim_ext2E_list2 = sinuous_input(mean = 2.5, amp = 0.5, omega = np.pi/50, b = 0.,
+                                 neuNum = excit_neu_num, epochs=epochs-epochs//2, step=ts)
+stim_ext2I_list2 = sinuous_input(mean = 2.5, amp = 0.5, omega = np.pi/50, b = 0.,
+                                 neuNum = inhib_neu_num, epochs=epochs-epochs//2, step=ts)
+stim_ext2E_list = np.concatenate((stim_ext2E_list1, stim_ext2E_list2))
+stim_ext2I_list = np.concatenate((stim_ext2I_list1, stim_ext2I_list2))
+'''
+stim_ext2E_list = np.ones((epochs, excit_neu_num)) * 4  #2.43
+stim_ext2I_list = np.ones((epochs, inhib_neu_num)) * 4  #2.43
+
+'''
+print("Creating inputs...")
+stim_ext2E_list = np.ones((epochs//3, excit_neu_num)) * 3
+stim_ext2I_list = np.ones((epochs//3, inhib_neu_num)) * 3
+for i in range(epochs//3):
+    val = 3 + (5 - 3) * (i / (epochs//3))
+    pos_stim_ext2E = np.ones((1, excit_neu_num)) * val
+    pos_stim_ext2I = np.ones((1, inhib_neu_num)) * val
+    stim_ext2E_list = np.concatenate((stim_ext2E_list, pos_stim_ext2E), axis=0)
+    stim_ext2I_list = np.concatenate((stim_ext2I_list, pos_stim_ext2I), axis=0)
+stim_ext2E_list3 = np.ones((epochs - epochs//3 - epochs//3, excit_neu_num)) * 5
+stim_ext2I_list3 = np.ones((epochs - epochs//3 - epochs//3, inhib_neu_num)) * 5
+stim_ext2E_list = np.concatenate((stim_ext2E_list, stim_ext2E_list3), axis=0)
+stim_ext2I_list = np.concatenate((stim_ext2I_list, stim_ext2I_list3), axis=0)
+'''
 # list of input, change with different input waveform
 neu_E = LIF(V_rest = V_rest, V_reset = V_reset, V_th = V_th, R = R, tau = tau)
 neu_I = LIF(V_rest = V_rest, V_reset = V_reset, V_th = V_th, R = R, tau = tau)
@@ -135,6 +184,7 @@ conn_I2I_mat[conn_I2I_mat < (1 - conn_prob)] = 0.
 
 start_t = time.time()
 # simulate
+print("Simulating...")
 for epoch in range(epochs):
     t_new = t + ts
 
@@ -172,7 +222,6 @@ for epoch in range(epochs):
     # update E2I, I2I syns
     s_syn_E2I = s_syn_E2I_new
     s_syn_I2I = s_syn_I2I_new
-    
     
     # simu E neurons
     _, V_E_new, spike_E_new = neu_E.simulate(
@@ -234,7 +283,7 @@ gs = GridSpec(row_num, col_num, figure=fig)
 fig.add_subplot(gs[:3, 0])
 spike_points_t = []
 spike_points_n = []
-for epoch in range(epochs):
+for epoch in range(epochs-1000):
     t = t_list[epoch]
     for i in range(excit_neu_num):
         if spike_E_list[epoch][i] == 1.:
@@ -247,24 +296,25 @@ def firing_rate(sp_matrix, width):
   width1 = int(width / 2 / ts) * 2 + 1
   window = np.ones(width1) * 1000 / width
   return np.convolve(rate, window, mode='same')
-'''
-spike_sum = np.sum(spike_E_list, axis=1)
-spike_sum = spike_sum / excit_neu_num
-'''
-rate = firing_rate(spike_E_list, 5.)
+rate = firing_rate(spike_E_list, 10.)
 fig.add_subplot(gs[3, 0])
-plt.plot(t_list, rate)
-plt.show()
-'''
-print(s_syn_E2E_list.shape)
+plt.plot(t_list[:-1000], rate[:-1000])
+#plt.show()
+
+stim_E_sum_list = np.sum(stim_ext2E_list, axis=1) / excit_neu_num
+stim_I_sum_list = np.sum(stim_ext2I_list, axis=1) / inhib_neu_num
 fig.add_subplot(gs[4, 0])
-plt.plot(t_list, s_syn_E2E_list[:, 0, 0])
+plt.plot(t_list[:-1000], stim_E_sum_list[:-1000], label = "input_E")
+plt.plot(t_list[:-1000], stim_I_sum_list[:-1000], label = "input_I")
 plt.legend()
 plt.show()
 
-fig.add_subplot(gs[5, 0])
-plt.plot(t_list, V_E_list[:, 0])
-plt.legend()
+fig = plt.figure()
+V_E_list[epoch]
+no_list = []
+V_list = []
+for i in range(excit_neu_num):
+    no_list.append(i)
+    V_list.append(V_E_list[-1][i])
+plt.scatter(no_list, V_list, marker=".")
 plt.show()
-
-'''
